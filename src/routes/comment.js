@@ -6,7 +6,7 @@ const Comment = require('../models/comment')
 
 router.get('/',async (req,res)=>{
     try {
-        const comments=await Comment.getAll();
+        const comments=await Comment.getAll(req.query);
         res.json(comments)
     } catch (error) {
         res.status(400).json({message:'Hata oldu tekrar deneyiniz'})

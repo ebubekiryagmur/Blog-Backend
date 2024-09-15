@@ -5,7 +5,7 @@ const Post = require("../models/post")
 
 router.get('/',async (req,res)=>{
     try {
-        const posts=await Post.getAll();
+        const posts=await Post.getAll(req.query);
         res.json(posts)
     } catch (error) {
         res.status(400).json({message:'Hata oldu tekrar deneyiniz'})
