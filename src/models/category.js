@@ -1,35 +1,61 @@
-const knex=require('./knex')
-const {SHOW_DELETED}=require('../const')
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
+import {SHOW_DELETED} from '../const.js'
 
 
 const Category ={
-    getAll: (query)=>{
+    getAll:async (query)=>{
         const {showDeleted}=query
         if(showDeleted === SHOW_DELETED.TRUE){
-            return knex('categories')
+            return await prisma.category.findMany();
         }else if (showDeleted === SHOW_DELETED.ONLY_DELETED){
-            return knex('categories').whereNotNull('deleted_at')
+            return await prisma.category.findMany({
+                where:{
+                    deleted_at:{
+                        not:null
+                    }
+                }
+            });
         }else {
-             return knex('categories').whereNull('deleted_at')
+            return await prisma.category.findMany({
+                where:{
+                    deleted_at:null
+                }
+            });
         }
        
     },
 
-    getById: (id)=>{
-        return knex('categories').where({id}).first()
+    getById:async (id)=>{
+        return await prisma.findUnique({
+            where:{
+                id:Number(id)
+            }
+        })
     },
 
-    create: (category)=>{
-        return knex('categories').insert(category).returning('*')
+    create: async (name)=>{
+        return await prisma.category.create(
+            {
+                data:{name}
+            }
+        )
     },
 
-    update: (id,category)=>{
-        return knex('categories').where({id}).update(category).returning('*')
+    update:async (id,new_name)=>{
+        return await prisma.category.update({
+            where:{id:Number(id)},
+            data:{name:new_name}
+        })
     },
 
-    delete: (id)=>{
-        return knex('categories').where({id}).update({deleted_at:new Date()}).returning('*')
+    delete:async (id)=>{
+        return await prisma.category.update({
+            where:{id:Number(id)},
+            data:{deleted_at:new Date()}
+        })
     }
 }
 
-module.exports=Category
+export default Category
