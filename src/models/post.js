@@ -1,44 +1,84 @@
-const knex=require('./knex')
-const {SHOW_DELETED,POST_STATUS}=require('../const')
+import { PrismaClient } from '@prisma/client'
+import {SHOW_DELETED,POST_STATUS} from '../const.js'
+const prisma = new PrismaClient();
 
 const Post = {
-    getAll:(query_string)=>{
+    getAll:async (query_string)=>{
         const {category,status,showDeleted}=query_string
-        const query= knex('posts')
+        const query_list=[]
         if(showDeleted === SHOW_DELETED.FALSE){
-            query.whereNull('deleted_at')
+           query_list.push({
+            deleted_at:null
+           })
         }else if (showDeleted === SHOW_DELETED.ONLY_DELETED){
-            query.whereNotNull('deleted_at')
+           query_list.push({
+            deleted_at:{
+                not:null
+            }
+           })
         }else if (showDeleted === SHOW_DELETED.TRUE){
-            query.whereNull('deleted_at')
+            query_list.push({
+                deleted_at:null
+               })
         }
 
         if(category){
-            query.where({category_id:category})
+            query_list.push({
+                category_id:Number(category)
+            })
         }
 
         if(status === POST_STATUS.PUBLISHED){
-            query.whereNotNull('published_at')
+            query_list.push({
+                published_at:{
+                    not:null
+                }
+            })
         }else if (status === POST_STATUS.DRAFT){
-            query.whereNull('published_at')
+            query_list.push({
+                published_at:null
+            })
         }
-        return query;
+        return await prisma.post.findMany({
+            where:{
+                AND:query_list
+            }
+        });
 
         
     },
-    create:(post)=>{
-        return knex('posts').insert(post).returning('*');
+    create:async(category_id,title,content)=>{
+        return await prisma.post.create({
+            data:{
+                category_id,
+                title,
+                content
+            }
+        }) ;
     },
-    getById:(id)=>{
-        return knex('posts').whereNull('deleted_at').where({id}).first();
+    getById: async(id)=>{
+        return await prisma.post.findUnique({
+            where:{id:Number(id)}
+        }) 
     },
-    update:(id,post)=>{
-        return knex('posts').whereNull('deleted_at').where({id}).update(post).returning('*');
+    update: async (id,category_id,title,content,published_at)=>{
+        return await prisma.post.update({
+            where:{id:Number(id)},
+            data:{
+                category_id,
+                title,
+                content,
+                published_at
+            }
+        })
     },
-    delete:(id)=>{
-       return knex('posts').where({id}).update({deleted_at:new Date()}).returning('*');
+    delete: async (id)=>{
+       return await prisma.post.update({
+        where:{id:Number(id)},
+        data: {deleted_at:new Date()}
+       })
     }
 }
 
 
-module.exports=Post;
+export default Post;

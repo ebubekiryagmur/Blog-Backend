@@ -1,5 +1,6 @@
 import express from 'express';
 import categoryRoutes from './routes/category.js'; 
+import postRoutes from './routes/post.js'
 
 
 const PORT=3000
@@ -12,6 +13,7 @@ app.use(express.json())
 
 
 app.use('/categories',categoryRoutes)
+app.use('/posts',postRoutes)
 
 
 
