@@ -1,59 +1,18 @@
-const express=require('express')
-const router=express.Router()
-const Comment = require('../models/comment')
+import { Router } from "express";
+import { getComments,getCommentById,createComment,deleteComment,updateComment } from "../controllers/commentController.js";
 
 
 
-router.get('/',async (req,res)=>{
-    try {
-        const comments=await Comment.getAll(req.query);
-        res.json(comments)
-    } catch (error) {
-        res.status(400).json({message:'Hata oldu tekrar deneyiniz'})
-    }
-})
+const router = Router();
 
-router.get('/:id',async (req,res)=>{
-    try {
-        const comment=await Comment.getById(req.params.id)
-        if(!comment){
-            res.status(404);
-        }
-        res.json(comment);
-    } catch (error) {
-        res.status(400).json({message:'Hata oldu tekrar deneyiniz'})
-    }
-})
+router.get('/',getComments)
+router.get('/:id',getCommentById)
+router.post('/',createComment)
+router.delete('/:id',deleteComment)
+router.put('/:id',updateComment)
 
 
 
-router.post('/',async (req,res)=>{
-    try {
-        const newComment=await Comment.create(req.body)
-        res.status(201).json(newComment)
-    } catch (error) {
-        res.status(400).json({message:'Hata oldu tekrar deneyiniz'})
-    }
-})
-
-router.put('/:id',async (req,res)=>{
-    try {
-        const updatedComment=await Comment.update(req.params.id,req,body)
-        res.json(updatedComment)
-    } catch (error) {
-        res.status(400).json({message:'Hata oldu tekrar deneyiniz'})
-    }
-})
-
-router.delete('/:id',async (req,res)=>{
-    try {
-        await Comment.delete(req.params.id)
-        res.status(202).json({})
-    } catch (error) {
-        res.status(400).json({message:'Hata oldu tekrar deneyiniz'})
-    }
-})
 
 
-
-module.exports=router;
+export default router;

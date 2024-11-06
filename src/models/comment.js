@@ -1,31 +1,61 @@
-const knex=require('./knex')
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient();
 
 
 const Comment = {
-    create:(comment)=>{
-        return knex('comments').insert(comment).returning('*');
+    create:async (post_id,content,commenter_name)=>{
+        return await prisma.comment.create({
+            data:{
+                post_id,
+                commenter_name,
+                content
+            }
+        }) 
+    
     },
-    getAll: (query_string)=>{
+    getAll:async (query_string)=>{
         const {post,commenter}=query_string
-        const query=knex('comments');
+        const query_list = []
 
         if (post){
-            query.where({post_id:post})
+            query_list.push(
+                {post_id:Number(post)}
+            )
         }
-        if(commenter){
-            query.where({commenter_name:commenter})
+        if (commenter){
+            query_list.push(
+                {commenter_name: commenter}
+            )
         }
-        return query;
+        return await prisma.comment.findMany({
+            where: {
+                AND:query_list
+            }
+        });
     },
-    getById: (id)=>{
-        return knex('comments').where({id}).first();
+    getById:async (id)=>{
+        return await prisma.comment.findUnique({
+            where: {
+                id:Number(id)
+            }
+        }) 
     },
-    update: (id,comment)=>{
-        return knex('comments').where({id}).update(comment).returning('*');
+    update:async (id,post_id,content,commenter_name)=>{
+        return await prisma.comment.update({
+            where:{id:Number(id)},
+            data:{
+                post_id,
+                content,
+                commenter_name
+            }
+        })
     },
-    delete: (id)=>{
-        return knex('comments').where({id}).delete();
+    delete:async (id)=>{
+        return await prisma.comment.delete({
+            where:{id:Number(id)},
+           })
+        }
     }
-}
 
-module.exports=Comment;
+
+export default Comment
